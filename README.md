@@ -19,8 +19,8 @@ Visit [Latest Release](https://github.com/ahxj/hexplayer/releases/latest) to dow
 - ✅ Minimalist interface, focused on music playback experience
 - ✅ Lightweight design - arm64 version only 500KB
 - ✅ Extremely low system resource usage, optimized CPU and memory utilization
-- ✅ Playlist support with playback order sorting
-- ✅ Song favoriting functionality to quickly find your favorite music
+- ✅ Playlist support with sorting by play count
+- ✅ Liked songs functionality to quickly find your favorite music
 - ✅ Import and export support for favorite song playlists
 
 ## Format Support Information
