@@ -194,6 +194,7 @@ struct ProgressBarView: View {
     @State private var isDragging = false
     @State private var localPosition: CGFloat = 0
     @State private var lastUpdateTime: TimeInterval = 0
+    @State private var viewWidth: CGFloat = 180
     
     @State private var displayCurrentTime: TimeInterval = 0
     @State private var displayRemainingTime: TimeInterval = 0
@@ -201,73 +202,79 @@ struct ProgressBarView: View {
     private let progressNotification = NotificationCenter.default
         .publisher(for: NSNotification.Name("PlaybackProgressNotification"))
     
-    private let sliderWidth: CGFloat = 180
     private let sliderHeight: CGFloat = 20
     private let updateThrottleInterval: TimeInterval = 5.0
     
     var body: some View {
-        ZStack(alignment: .leading) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 4)
-                .cornerRadius(2)
-            
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [.blue.opacity(0.8), .blue]),
-                        startPoint: .leading,
-                        endPoint: .trailing
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 4)
+                    .cornerRadius(2)
+                
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [.blue.opacity(0.8), .blue]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
                     )
-                )
-                .frame(width: isDragging ? localPosition : calculateProgressWidth(), height: 4)
-                .cornerRadius(2)
-        }
-        .frame(height: sliderHeight)
-        .contentShape(Rectangle())
-        .onAppear {
-            updateLocalPosition()
-            updateDisplayTimes()
-        }
-        .onReceive(progressNotification) { _ in
-            let now = Date().timeIntervalSince1970
-            if now - lastUpdateTime >= updateThrottleInterval && !isDragging {
-                lastUpdateTime = now
+                    .frame(width: isDragging ? localPosition : calculateProgressWidth(totalWidth: geometry.size.width), height: 4)
+                    .cornerRadius(2)
+            }
+            .frame(height: sliderHeight)
+            .contentShape(Rectangle())
+            .onAppear {
+                self.viewWidth = geometry.size.width
                 updateLocalPosition()
                 updateDisplayTimes()
             }
-        }
-        .onChange(of: audioManager.currentTime) { _ in
-            let now = Date().timeIntervalSince1970
-            if now - lastUpdateTime >= updateThrottleInterval && !isDragging {
-                lastUpdateTime = now
+            .onChange(of: geometry.size.width) { newWidth in
+                self.viewWidth = newWidth
                 updateLocalPosition()
-                updateDisplayTimes()
             }
-        }
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    isDragging = true
-                    localPosition = min(max(0, value.location.x), sliderWidth)
+            .onReceive(progressNotification) { _ in
+                let now = Date().timeIntervalSince1970
+                if now - lastUpdateTime >= updateThrottleInterval && !isDragging {
+                    lastUpdateTime = now
+                    updateLocalPosition()
                     updateDisplayTimes()
                 }
-                .onEnded { value in
-                    let finalPosition = min(max(0, value.location.x), sliderWidth)
-                    localPosition = finalPosition
+            }
+            .onChange(of: audioManager.currentTime) { _ in
+                let now = Date().timeIntervalSince1970
+                if now - lastUpdateTime >= updateThrottleInterval && !isDragging {
+                    lastUpdateTime = now
+                    updateLocalPosition()
                     updateDisplayTimes()
-                    
-                    let progress = finalPosition / sliderWidth
-                    let targetSeconds = Int(audioManager.duration * Double(progress))
-                    
-                    audioManager.seek(to: Double(targetSeconds))
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        isDragging = false
-                        lastUpdateTime = Date().timeIntervalSince1970
+                }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        isDragging = true
+                        localPosition = min(max(0, value.location.x), viewWidth)
+                        updateDisplayTimes()
                     }
-                }
-        )
+                    .onEnded { value in
+                        let finalPosition = min(max(0, value.location.x), viewWidth)
+                        localPosition = finalPosition
+                        updateDisplayTimes()
+                        
+                        let progress = finalPosition / viewWidth
+                        let targetSeconds = Int(audioManager.duration * Double(progress))
+                        
+                        audioManager.seek(to: Double(targetSeconds))
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isDragging = false
+                            lastUpdateTime = Date().timeIntervalSince1970
+                        }
+                    }
+            )
+        }
     }
     
     private func updateDisplayTimes() {
@@ -281,19 +288,19 @@ struct ProgressBarView: View {
         }
     }
     
-    private func calculateProgressWidth() -> CGFloat {
+    private func calculateProgressWidth(totalWidth: CGFloat) -> CGFloat {
         if audioManager.duration <= 0 { return 0 }
         let progress = min(audioManager.currentTime / audioManager.duration, 1.0)
-        return CGFloat(progress) * sliderWidth
+        return CGFloat(progress) * totalWidth
     }
     
     private func getTimeFromPosition() -> TimeInterval {
-        let progress = localPosition / sliderWidth
+        let progress = localPosition / viewWidth
         return Double(Int(audioManager.duration * Double(progress)))
     }
     
     private func updateLocalPosition() {
-        localPosition = calculateProgressWidth()
+        localPosition = calculateProgressWidth(totalWidth: viewWidth)
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
