@@ -277,10 +277,10 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
                     return
                 }
                 
-                let maxFilesToProcess = 100
+                let maxFilesToProcess = 2000
                 let processedContents = contents.prefix(maxFilesToProcess)
                 
-                let supportedExtensions: Set<String> = ["mp3", "m4a"]
+                let supportedExtensions: Set<String> = ["mp3", "m4a", "aac", "wav", "aiff", "aif", "aifc", "caf", "alac"]
                 var audioTracks: [Track] = []
                 audioTracks.reserveCapacity(min(100, processedContents.count))
                 
