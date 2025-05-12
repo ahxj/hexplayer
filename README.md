@@ -2,6 +2,8 @@
 
 A modern, minimalist local music player for macOS.
 
+![preview](res/preview.mp4)
+
 [中文说明文档 (README_zh.md)](README_zh.md)
 
 ## Warning:
