@@ -2,7 +2,10 @@
 
 A modern, minimalist local music player for macOS.
 
-![preview](res/preview.mp4)
+<video controls>
+  <source src="res/preview.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 [中文说明文档 (README_zh.md)](README_zh.md)
 

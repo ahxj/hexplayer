@@ -2,7 +2,10 @@
 
 一款现代，极简风格的 macOS 音乐播放器。
 
-![预览](res/preview.mp4)
+<video controls>
+  <source src="res/preview.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## 提醒：
 
