@@ -2,10 +2,7 @@
 
 一款现代，极简风格的 macOS 音乐播放器。
 
-<video controls>
-  <source src="res/preview.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![hexplayer preview](res/preview.png)](https://www.youtube.com/watch?v=GultB_Iz56E)
 
 ## 提醒：
 
